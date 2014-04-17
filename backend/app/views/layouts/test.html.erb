@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Frontend Test</title>
+  <%= stylesheet_link_tag    "/assets/app", media: "all" %>
+  <%= stylesheet_link_tag    "/assets/qunit" %>
+  <%= csrf_meta_tags %>
+  <style>
+    #ember-testing-container {
+      position: absolute;
+      background: white;
+      bottom: 0;
+      right: 0;
+      width: 640px;
+      height: 384px;
+      overflow: auto;
+      z-index: 9999;
+      border: 1px solid #ccc;
+    }
+    #ember-testing {
+      zoom: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <div id="app">
+  </div>
+  <noscript>
+    <%= render @content if @content%>
+  </noscript>
+
+
+  <%= javascript_include_tag '/assets/app' %>
+  <%= javascript_include_tag '/assets/tests' %>
+  <script>
+    require('frontend/test-helper');
+    require('frontend/test-loader');
+  </script>
+</body>
+</html>

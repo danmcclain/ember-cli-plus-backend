@@ -1,0 +1,23 @@
+language: ruby
+
+rvm:
+- 2.1.0
+branches:
+  except:
+  - production
+  - "/^v\\d+$/"
+before_install:
+- psql -c 'create database ember_cli_app_test;' -U postgres
+- npm install -g ember-cli
+- echo 'y' | ember
+install:
+- gem install sass
+- gem install compass
+- cp backend/config/database.yml.travis backend/config/database.yml
+- cd backend && bundle install --without development --deployment && RAILS_ENV=test bundle exec rake db:migrate && cd ..
+before_script:
+- cd frontend && npm install && bower install && ember build development && mv dist ../backend/public/assets/ && cd ..
+script:
+- cd backend && bundle exec rake && bundle exec rake qunit:ci
+addons:
+  postgresql: '9.3'
