@@ -14,12 +14,12 @@ task :deploy do
   sh 'git subtree push -P backend eci master'
 
   release_output = `heroku releases -a ember-compiled-index`.split "\n"
-  latest_release = release_output[1].match(/v\d+/).to_s
+  latest_release = "eci-#{release_output[1].match(/v\d+/).to_s}"
 
   tags = `git tag`
 
   unless tags.include? latest_release
-    sh "git tag eci-#{latest_release}"
+    sh "git tag #{latest_release}"
   end
 
   sh 'git checkout -'
