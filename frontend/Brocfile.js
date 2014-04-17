@@ -93,7 +93,6 @@ module.exports = function (broccoli) {
   // Ouput
 
   var outputTrees = [
-    indexHTML,
     applicationJs,
     'public',
     styles

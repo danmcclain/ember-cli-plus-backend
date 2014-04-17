@@ -22,5 +22,5 @@ task :deploy do
     sh "git tag #{latest_release}"
   end
 
-  sh 'git checkout master'
+  sh 'git checkout -'
 end
