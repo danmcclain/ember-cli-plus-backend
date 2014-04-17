@@ -9,6 +9,7 @@ branches:
 before_install:
 - psql -c 'create database ember_cli_app_test;' -U postgres
 - npm install -g ember-cli
+- npm install -g bower-cli
 - echo 'y' | ember
 install:
 - gem install sass
