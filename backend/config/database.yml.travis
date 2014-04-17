@@ -1,0 +1,7 @@
+test:
+  adapter: postgresql
+  encoding: unicode
+  database: ember_cli_app_test
+  pool: 5
+  username: postgres
+  password:
