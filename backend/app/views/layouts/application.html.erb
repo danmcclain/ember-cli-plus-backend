@@ -1,14 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Backend</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <title>Ember CLI App</title>
+  <%= stylesheet_link_tag    "/assets/app", media: "all" %>
   <%= csrf_meta_tags %>
 </head>
 <body>
+  <div id="app">
+  </div>
+  <noscript>
+    <%= render @content if @content%>
+  </noscript>
 
-<%= yield %>
-
+  <script>
+    window.ENV = {};
+    document.write('<base href="' + ENV.rootURL + '" />');
+  </script>
+  <%= javascript_include_tag '/assets/app' %>
+  <script>
+    window.Frontend = require('frontend/main')['default']('frontend', {
+      rootElement: '#app'
+    });
+  </script>
 </body>
 </html>

@@ -76,7 +76,7 @@ module.exports = function (broccoli) {
     ],
     legacyFilesToAppend: legacyFilesToAppend,
     wrapInEval: env !== 'production',
-    outputFile: '/assets/app.js'
+    outputFile: '/app.js'
   });
 
   if (env === 'production') {
@@ -88,7 +88,7 @@ module.exports = function (broccoli) {
 
   // Styles
 
-  var styles = preprocessCss(appAndDependencies, prefix + '/styles', '/assets');
+  var styles = preprocessCss(appAndDependencies, prefix + '/styles', '/');
 
   // Ouput
 
