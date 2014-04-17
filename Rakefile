@@ -2,7 +2,7 @@ require 'rake'
 
 task :deploy do
   sh 'git checkout ember-compiled-index-production'
-  sh 'git merge ember-compiled-index-rails -s theirs -m "Merging master for deployment"'
+  sh 'git merge ember-compiled-index-rails -m "Merging master for deployment"'
   sh 'rm -rf backend/public'
   sh 'cd frontend && ember build production && mv dist ../backend/public && cd ..'
 
