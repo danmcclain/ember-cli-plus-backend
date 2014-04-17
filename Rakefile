@@ -1,5 +1,37 @@
 require 'rake'
 
+task :run do
+  pids = [
+    spawn("cd backend && EMBER_PORT=4900 rails s -p 3900"),
+    spawn("cd frontend && ./node_modules/.bin/ember server --port=4900 --proxy-port=3900"),
+  ]
+
+  trap "INT" do
+    Process.kill "INT", *pids
+    exit 1
+  end
+
+  loop do
+    sleep 1
+  end
+end
+
+task :test do
+  pids = [
+    spawn("cd backend && EMBER_PORT=4900 rails s -p 3900 -e test"),
+    spawn("cd frontend && ./node_modules/.bin/ember server --port=4900 --proxy-port=3900"),
+  ]
+
+  trap "INT" do
+    Process.kill "INT", *pids
+    exit 1
+  end
+
+  loop do
+    sleep 1
+  end
+end
+
 task :deploy do
   sh 'git checkout rsh-production'
   sh 'git merge rails-served-html -m "Merging master for deployment"'
