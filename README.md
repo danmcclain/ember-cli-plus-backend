@@ -16,6 +16,7 @@ Setup
 ------
 
 1 - Ensure you have the prerequisites installed globally (see above)
+
 2 - Navigate to your desired project directory and clone the repo:
 
 ```
