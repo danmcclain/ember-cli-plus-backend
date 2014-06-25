@@ -6,9 +6,9 @@ This is an example of various ember-cli + backend API setups (the API in this ca
 Prerequisites
 ------
 
-- [Ember-cli](https://github.com/stefanpenner/ember-cli)
+- [Ember-cli](//github.com/stefanpenner/ember-cli)
   - `npm install -g ember-cli`
-- [bower](https://github.com/bower/bower)
+- [bower](//github.com/bower/bower)
   - `npm install -g bower`
 
 
