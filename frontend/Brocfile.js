@@ -1,5 +1,6 @@
 /* global require, module */
 
+var broccoli = require('broccoli');
 var uglifyJavaScript = require('broccoli-uglify-js');
 var replace = require('broccoli-replace');
 var compileES6 = require('broccoli-es6-concatenator');
@@ -15,145 +16,141 @@ var preprocessCss = p.preprocessCss;
 var preprocessTemplates = p.preprocessTemplates;
 var preprocessJs = p.preprocessJs;
 
-module.exports = function (broccoli) {
+var prefix = 'frontend';
+var rootURL = '/';
 
-  var prefix = 'frontend';
-  var rootURL = '/';
+// index.html
 
-  // index.html
+// sourceTrees, appAndDependencies for CSS and JavaScript
 
+var app = pickFiles('app', {
+  srcDir: '/',
+  destDir: prefix
+});
 
-  // sourceTrees, appAndDependencies for CSS and JavaScript
+app = preprocessTemplates(app);
 
-  var app = pickFiles('app', {
+var config = pickFiles('config', { // Don't pick anything, just watch config folder
+  srcDir: '/',
+  files: [],
+  destDir: '/'
+});
+
+var sourceTrees = [app, config, 'vendor'].concat(broccoli.bowerTrees());
+var appAndDependencies = mergeTrees(sourceTrees, { overwrite: true });
+
+// JavaScript
+
+var legacyFilesToAppend = [
+  'jquery.js',
+  'handlebars.js',
+  'ember.js',
+  'ic-ajax/dist/named-amd/main.js',
+  'ember-data.js',
+  'ember-resolver.js',
+  'ember-shim.js'
+];
+
+var applicationJs = preprocessJs(appAndDependencies, '/', prefix);
+
+applicationJs = compileES6(applicationJs, {
+  loaderFile: 'loader/loader.js',
+  ignoredModules: [
+    'ember/resolver',
+    'ic-ajax'
+  ],
+  inputFiles: [
+    prefix + '/**/*.js'
+  ],
+  legacyFilesToAppend: legacyFilesToAppend,
+  wrapInEval: env !== 'production',
+  outputFile: '/app.js'
+});
+
+if (env === 'production') {
+  applicationJs = uglifyJavaScript(applicationJs, {
+    mangle: false,
+    compress: false
+  });
+}
+
+// Styles
+
+var styles = preprocessCss(appAndDependencies, prefix + '/styles', '/');
+
+// Ouput
+
+var outputTrees = [
+  applicationJs,
+  'public',
+  styles
+];
+
+// Testing
+
+if (env !== 'production') {
+
+  var tests = pickFiles('tests', {
     srcDir: '/',
-    destDir: prefix
+    destDir: prefix + '/'
   });
 
-  app = preprocessTemplates(app);
 
-  var config = pickFiles('config', { // Don't pick anything, just watch config folder
-    srcDir: '/',
-    files: [],
+  var qunitStyles = pickFiles('vendor', {
+    srcDir: '/qunit/qunit',
+    files: ['qunit.css'],
     destDir: '/'
   });
 
-  var sourceTrees = [app, config, 'vendor'].concat(broccoli.bowerTrees());
-  var appAndDependencies = mergeTrees(sourceTrees, { overwrite: true });
 
-  // JavaScript
+  tests = preprocessTemplates(tests);
 
-  var legacyFilesToAppend = [
-    'jquery.js',
-    'handlebars.js',
-    'ember.js',
-    'ic-ajax/dist/named-amd/main.js',
-    'ember-data.js',
-    'ember-resolver.js',
-    'ember-shim.js'
+  sourceTrees = [tests, 'vendor'].concat(broccoli.bowerTrees());
+  appAndDependencies = mergeTrees(sourceTrees, { overwrite: true });
+
+  var testsJs = preprocessJs(appAndDependencies, '/', prefix);
+
+  var validatedJs = validateES6(mergeTrees([app, tests]), {
+    whitelist: {
+      'ember/resolver': ['default'],
+      'ember-qunit': [
+        'globalize',
+        'moduleFor',
+        'moduleForComponent',
+        'moduleForModel',
+        'test',
+        'setResolver'
+      ]
+    }
+  });
+
+  var legacyTestFiles = [
+    'qunit/qunit/qunit.js',
+    'qunit-shim.js',
+    'ember-qunit/dist/named-amd/main.js'
   ];
 
-  var applicationJs = preprocessJs(appAndDependencies, '/', prefix);
+  legacyFilesToAppend = legacyFilesToAppend.concat(legacyTestFiles);
 
-  applicationJs = compileES6(applicationJs, {
-    loaderFile: 'loader/loader.js',
+  testsJs = compileES6(testsJs, {
+    // Temporary workaround for
+    // https://github.com/joliss/broccoli-es6-concatenator/issues/9
+    loaderFile: '_loader.js',
     ignoredModules: [
       'ember/resolver',
-      'ic-ajax'
+      'ember-qunit'
     ],
     inputFiles: [
       prefix + '/**/*.js'
     ],
     legacyFilesToAppend: legacyFilesToAppend,
-    wrapInEval: env !== 'production',
-    outputFile: '/app.js'
+
+    wrapInEval: true,
+    outputFile: '/tests.js'
   });
 
-  if (env === 'production') {
-    applicationJs = uglifyJavaScript(applicationJs, {
-      mangle: false,
-      compress: false
-    });
-  }
+  var testsTrees = [qunitStyles, validatedJs, testsJs];
+  outputTrees = outputTrees.concat(testsTrees);
+}
 
-  // Styles
-
-  var styles = preprocessCss(appAndDependencies, prefix + '/styles', '/');
-
-  // Ouput
-
-  var outputTrees = [
-    applicationJs,
-    'public',
-    styles
-  ];
-
-  // Testing
-
-  if (env !== 'production') {
-
-    var tests = pickFiles('tests', {
-      srcDir: '/',
-      destDir: prefix + '/'
-    });
-
-
-    var qunitStyles = pickFiles('vendor', {
-      srcDir: '/qunit/qunit',
-      files: ['qunit.css'],
-      destDir: '/'
-    });
-
-
-    tests = preprocessTemplates(tests);
-
-    sourceTrees = [tests, 'vendor'].concat(broccoli.bowerTrees());
-    appAndDependencies = mergeTrees(sourceTrees, { overwrite: true });
-
-    var testsJs = preprocessJs(appAndDependencies, '/', prefix);
-
-    var validatedJs = validateES6(mergeTrees([app, tests]), {
-      whitelist: {
-        'ember/resolver': ['default'],
-        'ember-qunit': [
-          'globalize',
-          'moduleFor',
-          'moduleForComponent',
-          'moduleForModel',
-          'test',
-          'setResolver'
-        ]
-      }
-    });
-
-    var legacyTestFiles = [
-      'qunit/qunit/qunit.js',
-      'qunit-shim.js',
-      'ember-qunit/dist/named-amd/main.js'
-    ];
-
-    legacyFilesToAppend = legacyFilesToAppend.concat(legacyTestFiles);
-
-    testsJs = compileES6(testsJs, {
-      // Temporary workaround for
-      // https://github.com/joliss/broccoli-es6-concatenator/issues/9
-      loaderFile: '_loader.js',
-      ignoredModules: [
-        'ember/resolver',
-        'ember-qunit'
-      ],
-      inputFiles: [
-        prefix + '/**/*.js'
-      ],
-      legacyFilesToAppend: legacyFilesToAppend,
-
-      wrapInEval: true,
-      outputFile: '/tests.js'
-    });
-
-    var testsTrees = [qunitStyles, validatedJs, testsJs];
-    outputTrees = outputTrees.concat(testsTrees);
-  }
-
-  return mergeTrees(outputTrees, { overwrite: true });
-};
+module.exports = mergeTrees(outputTrees, { overwrite: true });
